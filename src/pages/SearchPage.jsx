@@ -3,89 +3,74 @@ import { gql, useQuery } from "@apollo/client";
 import AnimeCard from "../components/AnimeCard";
 import "../index.css";
 function SearchPage() {
-  const [keyword, setKeyword] = useState("");
+    const [keyword, setKeyword] = useState("");
 
-  const handleSearch = () => {
-    setKeyword(document.getElementById("keyword").value);
-    console.log(keyword);
-  };
+    const handleSearch = () => {
+        setKeyword(document.getElementById("keyword").value);
+        console.log(keyword);
+    };
 
-  const SEARCH_QUERY = gql`
-    query SearchByName($n: String!) {
-      getCityByName(name: $n, config: { units: metric }) {
-        id
-        name
-        country
-        coord {
-          lon
-          lat
+    const SEARCH_QUERY = gql`
+        query SearchByName($name: String) {
+            Media(search: $name, type: ANIME) {
+                id
+                title {
+                    romaji
+                }
+                coverImage {
+                    large
+                }
+            }
         }
-        weather {
-          summary {
-            title
-            description
-            icon
-          }
-          temperature {
-            actual
-            feelsLike
-            min
-            max
-          }
-          timestamp
-        }
-      }
-    }
-  `;
+    `;
+    const { loading, e, data } = useQuery(SEARCH_QUERY, {
+        variables: {
+            name: keyword,
+        },
+    });
 
-  const { loading, e, data } = useQuery(SEARCH_QUERY, {
-    variables: {
-      n: keyword,
-    },
-  });
-
-  console.log(data);
-  var search_result = "";
-  if (loading || keyword === "") search_result = "";
-  else {
-    if (!data || !data.Media)
-      search_result = (
-        <i className="text-warning mt-5">"{keyword}" not found</i>
-      );
+    console.log(data);
+    var search_result = "";
+    if (loading || keyword === "") search_result = "";
     else {
-      const anime = data.Media;
-      console.log(anime);
-      search_result = <AnimeCard anime={anime} key={anime.id} />;
+        if (!data || !data.Media)
+            search_result = (
+                <i className="text-warning mt-5">"{keyword}" not found</i>
+            );
+        else {
+            const anime = data.Media;
+            console.log(anime);
+            search_result = <AnimeCard anime={anime} key={anime.id} />;
+        }
     }
-  }
 
-  return (
-    <div>
-      <h1 className="d-flex justify-content-center m-3">Search</h1>
+    return (
+        <div>
+            <h1 className="d-flex justify-content-center m-3">Search</h1>
 
-      <div className="search-page-container">
-        <div className="search-container mt-3">
-          <div className="form-inline">
-            <input
-              id="keyword"
-              className="form-control mr-sm-2"
-              type="search"
-              placeholder="Search Anime Title"
-              aria-label="Search"
-            />
-            <button
-              className="btn btn-dark "
-              type="submit"
-              onClick={handleSearch}
-            >
-              Search
-            </button>
-          </div>
+            <div className="search-page-container">
+                <div className="search-container mt-3">
+                    <div className="form-inline">
+                        <input
+                            id="keyword"
+                            className="form-control mr-sm-2"
+                            type="search"
+                            placeholder="Search Anime Title"
+                            aria-label="Search"
+                        />
+                        <button
+                            className="btn btn-dark "
+                            type="submit"
+                            onClick={handleSearch}
+                        >
+                            Search
+                        </button>
+                    </div>
+                </div>
+                <div className="search-result">{search_result}</div>
+            </div>
         </div>
-        <div className="search-result">{search_result}</div>
-      </div>
-    </div>
-  );
+    );
 }
 
 export default SearchPage;
